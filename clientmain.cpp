@@ -12,56 +12,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "protocol.h"
+#include "my_assignment.h"
+#include "my_socket.h"
+#include "my_handle_message.h"
+#include "my_handle_data.h"
 
 // Included to get the support library
 #include <calcLib.h>
 
 #include "protocol.h"
-
-int sendMessage(calcMessage *message_ptr, int clientsocket)
-{
-  ssize_t bytesSent = send(clientsocket, message_ptr, sizeof(calcMessage), 0);
-  if (bytesSent < 0)
-  {
-    printf("ERROR:sending message failed!\n");
-    return -1;
-  }
-  return 1;
-}
-
-int createConnectSocket(char *Desthost, char *Destport)
-{
-  struct addrinfo hints, *res;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-
-  int status = getaddrinfo(Desthost, Destport, &hints, &res);
-  if (status != 0)
-  {
-    printf("ERROR: Cannot resolve server address: %s\n", gai_strerror(status));
-    return -1;
-  }
-  int clientSocket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-  if (clientSocket < 0)
-  {
-    printf("ERROR: Socket creation failed.\n");
-    return -1;
-  }
-  // connect to server
-  if (connect(clientSocket, res->ai_addr, res->ai_addrlen) < 0)
-  {
-    int port = atoi(Destport);
-    printf("ERROR: CANT CONNECT TO %s:%d.\n", Desthost, port);
-    freeaddrinfo(res);
-    return -1;
-  }
-  freeaddrinfo(res);
-  return clientSocket;
-}
-int getAdress()
-{
-}
 
 int get_calcProtocol(calcProtocol *msg_ptr, int clientSocket)
 {
@@ -73,45 +32,64 @@ int get_calcProtocol(calcProtocol *msg_ptr, int clientSocket)
   return 0;
 }
 
-void setMessage(calcMessage *message_ptr, int type, int message, int protocol, int major_version, int minor_version)
-{
-  message_ptr->type = htons(type);
-  message_ptr->message = htonl(message);
-  message_ptr->protocol = htons(protocol);
-  message_ptr->major_version = htons(major_version);
-  message_ptr->minor_version = htons(minor_version);
-}
-
-struct MyStruct
-{
-  int field1;
-  float field2;
-};
-
 int main(int argc, char *argv[])
 {
-  char *Desthost;
-  char *Destport;
-  int clientSocket = createConnectSocket(Desthost, Destport);
+
+  char delim[] = ":";
+  char *Desthost = strtok(argv[1], delim);
+  char *Destport = strtok(NULL, delim);
+  int port = atoi(Destport);
+
+  int waiting_seconds = 2;
+  int clientSocket = createConnectSocket(Desthost, Destport, waiting_seconds);
   if (clientSocket < 0)
   {
     return -1;
   }
 
-  calcMessage message;
-  calcMessage *message_ptr = &message;
-  setMessage(message_ptr, 22, 0, 17, 1, 0);
-  if (sendMessage(message_ptr, clientSocket) < 0)
-  {
-    return -1;
-  }
+  // send first calcMessage, should get back a protocoll
+
+  int attempts = 3;
+  int counter = 0;
+  bool flag = false;
 
   calcProtocol protocol;
   calcProtocol *protocol_ptr = &protocol;
-  if (get_calcProtocol(protocol_ptr, clientSocket) < 0)
+  while (counter < attempts)
   {
-    return -1;
+    calcMessage message;
+    calcMessage *message_ptr = &message;
+    setMessage(message_ptr, 22, 0, 17, 1, 0);
+    if (sendMessage(message_ptr, clientSocket) < 0)
+    {
+      close(clientSocket);
+      return -1;
+    }
+
+    // if the server supports the protocoll, it will respond with a calcProtocoll.
+    // if the server does not support it , it will respond with calcMessage type=2, message=2, major_version=1,minor_version=0
+
+    int response = read_data(protocol_ptr, clientSocket);
+    if (response == 0)
+    {
+      doAssignment(protocol_ptr);
+      counter = 3;
+      flag = true;
+    }
+    else if (response == -2)
+    {
+      printf("ERROR! server sent NOT OK\n");
+      close(clientSocket);
+      return 0;
+    }
+  }
+  if (flag == false)
+  {
+    printf("ERROR! Server timeout 3 times\n");
+    close(clientSocket);
+    return 0;
   }
 
-  /* Do magic */
+  close(clientSocket);
+  return 0;
 }
