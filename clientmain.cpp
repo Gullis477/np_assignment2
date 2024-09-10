@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
   if (clientSocket < 0)
   {
     freeaddrinfo(res);
+    printf("ERROR: socket being weird -1\n");
     return -1;
   }
 
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
     {
       freeaddrinfo(res);
       close(clientSocket);
+      printf("ERROr! sendMessage failed-1\n");
       return -1;
     }
 
@@ -77,35 +79,36 @@ int main(int argc, char *argv[])
     if (response == 0)
     {
       doAssignment(protocol_ptr);
-      uint32_t arith = protocol_ptr->arith;
+      uint32_t arith = ntohl(protocol_ptr->arith);
 
       if (arith < 5)
       {
-        int result = ntohl(protocol_ptr->inResult);
+        int32_t result = ntohl(protocol_ptr->inResult);
         sprintf(result_str, "%d", result);
       }
       else
       {
-        sprintf(result_str, "%8.8g", protocol_ptr->flResult);
+        double result = protocol_ptr->flResult;
+        sprintf(result_str, "%8.8g", result);
       }
       counter = 3;
       flag = true;
     }
     else if (response == -2)
     {
-      printf("ERROR! server sent NOT OK\n");
+      printf("ERROR! server sent NOT OK 0\n");
       freeaddrinfo(res);
       close(clientSocket);
-      return 0;
+      return -1;
     }
     counter++;
   }
   if (flag == false)
   {
-    printf("ERROR! Server timeout 3 times\n");
+    printf("ERROR! Server did not reply\n");
     freeaddrinfo(res);
     close(clientSocket);
-    return 0;
+    return -1;
   }
 
   flag = false;
@@ -116,6 +119,7 @@ int main(int argc, char *argv[])
     {
       close(clientSocket);
       freeaddrinfo(res);
+      printf("ERROr! sendMessage failed-1\n");
       return -1;
     }
 
@@ -141,20 +145,20 @@ int main(int argc, char *argv[])
         server_message_char = "NOT OK";
       }
 
-      printf("%s (myresult=%s)\n", server_message_char, server_message_char);
+      printf("%s (myresult=%s)\n", server_message_char, result_str);
     }
-    if (response == -2)
+    else if (response == -2)
     {
       close(clientSocket);
       freeaddrinfo(res);
-      return 0;
+      return -1;
     }
     counter++;
   }
 
   if (flag == false)
   {
-    printf("ERROR! Server timeout 3 times\n");
+    printf("ERROR! Server did not reply 0\n");
   }
   close(clientSocket);
   freeaddrinfo(res);

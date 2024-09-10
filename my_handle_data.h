@@ -23,7 +23,7 @@ int read_data(void *void_ptr, int clientSocket, ssize_t size)
         uint16_t minor_version = ntohs(message_ptr->minor_version);
         if (message_type == 2 && message == 2 && major_version == 1 && minor_version == 0)
         {
-            printf("ERROR! NOT OK! protocoll\n");
+            printf("ERROR! SERVER SENT NOT OK!\n");
             return -2;
         }
         return 0;

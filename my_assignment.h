@@ -4,7 +4,7 @@
 void doAssignment(calcProtocol *protocol_ptr)
 {
   uint32_t arith = ntohl(protocol_ptr->arith);
-  const char *result_str;
+  const char *op_str;
   if (arith < 5)
   {
     int32_t v1 = ntohl(protocol_ptr->inValue1);
@@ -14,25 +14,25 @@ void doAssignment(calcProtocol *protocol_ptr)
     if (arith == 1)
     {
       result = v1 + v2;
-      result_str = "add";
+      op_str = "add";
     }
     else if (arith == 2)
     {
       result = v1 - v2;
-      result_str = "sub";
+      op_str = "sub";
     }
     else if (arith == 3)
     {
       result = v1 * v2;
-      result_str = "mul";
+      op_str = "mul";
     }
     else if (arith == 4)
     {
       result = v1 / v2;
-      result_str = "div";
+      op_str = "div";
     }
-    printf("%s %d %d\n", result_str, v1, v2);
-    protocol_ptr->inResult = result;
+    printf("%s %d %d\n", op_str, v1, v2);
+    protocol_ptr->inResult = htonl(result);
   }
   else
   {
@@ -42,24 +42,25 @@ void doAssignment(calcProtocol *protocol_ptr)
     if (arith == 5)
     {
       result = v1 + v2;
-      result_str = "fadd";
+      op_str = "fadd";
     }
     else if (arith == 6)
     {
       result = v1 - v2;
-      result_str = "fsub";
+      op_str = "fsub";
     }
     else if (arith == 7)
     {
       result = v1 * v2;
-      result_str = "fmul";
+      op_str = "fmul";
     }
     else if (arith == 8)
     {
       result = v1 / v2;
-      result_str = "fdiv";
+      op_str = "fdiv";
     }
-    printf("%s %8.8g %8.8g \n", result_str, v1, v2);
-    protocol_ptr->inResult = result;
+    printf("%s %8.8g %8.8g \n", op_str, v1, v2);
+
+    protocol_ptr->flResult = result;
   }
 }
