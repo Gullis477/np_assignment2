@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   socklen_t addr_len;
   memcpy(dest_addr, res->ai_addr, res->ai_addrlen);
   addr_len = res->ai_addrlen;
-  freeaddrinfo(res);
+  // freeaddrinfo(res);
   if (clientSocket < 0)
   {
     return -1;
