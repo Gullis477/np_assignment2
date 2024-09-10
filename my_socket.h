@@ -8,7 +8,6 @@
 
 int createConnectSocket(char *Desthost, char *Destport, int wait_seconds)
 {
-    int port = atoi(Destport);
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));

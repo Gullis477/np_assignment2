@@ -22,16 +22,6 @@
 
 #include "protocol.h"
 
-int get_calcProtocol(calcProtocol *msg_ptr, int clientSocket)
-{
-  if (recv(clientSocket, msg_ptr, sizeof(calcProtocol), 0) < 0)
-  {
-    printf("Error: failed to get message\n");
-    return -1;
-  }
-  return 0;
-}
-
 int main(int argc, char *argv[])
 {
 
@@ -55,6 +45,7 @@ int main(int argc, char *argv[])
 
   calcProtocol protocol;
   calcProtocol *protocol_ptr = &protocol;
+  char result_str[20];
   while (counter < attempts)
   {
     calcMessage message;
@@ -73,6 +64,17 @@ int main(int argc, char *argv[])
     if (response == 0)
     {
       doAssignment(protocol_ptr);
+      uint32_t arith = protocol_ptr->arith;
+
+      if (arith < 5)
+      {
+        int result = ntohl(protocol_ptr->inResult);
+        sprintf(result_str, "%d", result);
+      }
+      else
+      {
+        sprintf(result_str, "%8.8g", protocol_ptr->flResult);
+      }
       counter = 3;
       flag = true;
     }
@@ -101,7 +103,36 @@ int main(int argc, char *argv[])
       return -1;
     }
 
+    calcMessage message;
+    calcMessage *message_ptr = &message;
+    int response = read_data(message_ptr, clientSocket, sizeof(calcMessage));
+    if (response == 0)
+    {
+      counter = 3;
+      flag = true;
+      int server_message = ntohl(message_ptr->message);
+      const char *server_message_char;
+      if (server_message == 0)
+      {
+        server_message_char = "NA";
+      }
+      else if (server_message == 1)
+      {
+        server_message_char = "OK";
+      }
+      else if (server_message == 2)
+      {
+        server_message_char = "NOT OK";
+      }
+
+      printf("%s (myresult=%s)\n", server_message_char, server_message_char);
+    }
     counter++;
+  }
+
+  if (flag == false)
+  {
+    printf("ERROR! Server timeout 3 times\n");
   }
   close(clientSocket);
   return 0;

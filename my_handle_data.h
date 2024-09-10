@@ -2,7 +2,7 @@
 #include <sys/socket.h>
 #include "protocol.h"
 
-int read_data(calcProtocol *protocol_ptr, int clientSocket, size_t size)
+int read_data(void *protocol_ptr, int clientSocket, ssize_t size)
 {
     ssize_t receivedBytes = recv(clientSocket, protocol_ptr, size, 0);
     if (receivedBytes < 0)
