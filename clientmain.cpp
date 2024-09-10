@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     setMessage(message_ptr, 22, 0, 17, 1, 0);
     if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage), res->ai_addr, res->ai_addrlen) < 0)
     {
+      freeaddrinfo(res);
       close(clientSocket);
       return -1;
     }
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
     else if (response == -2)
     {
       printf("ERROR! server sent NOT OK\n");
+      freeaddrinfo(res);
       close(clientSocket);
       return 0;
     }
@@ -101,6 +103,7 @@ int main(int argc, char *argv[])
   if (flag == false)
   {
     printf("ERROR! Server timeout 3 times\n");
+    freeaddrinfo(res);
     close(clientSocket);
     return 0;
   }
@@ -112,6 +115,7 @@ int main(int argc, char *argv[])
     if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol), res->ai_addr, res->ai_addrlen) < 0)
     {
       close(clientSocket);
+      freeaddrinfo(res);
       return -1;
     }
 
@@ -142,6 +146,7 @@ int main(int argc, char *argv[])
     if (response == -2)
     {
       close(clientSocket);
+      freeaddrinfo(res);
       return 0;
     }
     counter++;
@@ -152,5 +157,6 @@ int main(int argc, char *argv[])
     printf("ERROR! Server timeout 3 times\n");
   }
   close(clientSocket);
+  freeaddrinfo(res);
   return 0;
 }
