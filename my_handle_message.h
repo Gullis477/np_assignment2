@@ -3,10 +3,9 @@
 #include <sys/socket.h>
 #include "protocol.h"
 
-int sendMessage(void *void_ptr, int clientsocket, size_t size)
+int sendMessage(void *void_ptr, int clientsocket, size_t size, sockaddr *dest_addr, socklen_t addr_len)
 {
-    ssize_t bytesSent = 0;
-    bytesSent = send(clientsocket, void_ptr, size, 0);
+    ssize_t bytesSent = sendto(clientsocket, void_ptr, size, 0, dest_addr, addr_len);
     if (bytesSent < 0)
     {
         printf("ERROR:sending message failed!\n");

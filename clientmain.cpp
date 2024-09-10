@@ -28,10 +28,21 @@ int main(int argc, char *argv[])
   char delim[] = ":";
   char *Desthost = strtok(argv[1], delim);
   char *Destport = strtok(NULL, delim);
-  int port = atoi(Destport);
 
   int waiting_seconds = 2;
-  int clientSocket = createConnectSocket(Desthost, Destport, waiting_seconds);
+
+  struct addrinfo hints;
+  addrinfo *res = &hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_DGRAM;
+
+  int clientSocket = createConnectSocket(res, Desthost, Destport, waiting_seconds);
+  struct sockaddr *dest_addr;
+  socklen_t addr_len;
+  memcpy(dest_addr, res->ai_addr, res->ai_addrlen);
+  addr_len = res->ai_addrlen;
+  freeaddrinfo(res);
   if (clientSocket < 0)
   {
     return -1;
@@ -51,7 +62,7 @@ int main(int argc, char *argv[])
     calcMessage message;
     calcMessage *message_ptr = &message;
     setMessage(message_ptr, 22, 0, 17, 1, 0);
-    if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage)) < 0)
+    if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage), dest_addr, addr_len) < 0)
     {
       close(clientSocket);
       return -1;
@@ -97,7 +108,7 @@ int main(int argc, char *argv[])
   counter = 0;
   while (counter < attempts)
   {
-    if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol)) < 0)
+    if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol), dest_addr, addr_len) < 0)
     {
       close(clientSocket);
       return -1;

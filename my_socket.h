@@ -6,19 +6,13 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-int createConnectSocket(char *Desthost, char *Destport, int wait_seconds)
+int createConnectSocket(addrinfo *res, char *Desthost, char *Destport, int wait_seconds)
 {
-
-    struct addrinfo hints, *res;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-
     // set up adress
-    int status = getaddrinfo(Desthost, Destport, &hints, &res);
+    int status = getaddrinfo(Desthost, Destport, res, &res);
     if (status != 0)
     {
-        printf("ERROR: Cannot resolve server address: %s\n", gai_strerror(status));
+        printf("ERROR: Cannot resolve server address\n");
         return -1;
     }
 
