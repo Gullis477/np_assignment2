@@ -1,22 +1,12 @@
-#pragma once
-
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <arpa/inet.h>
-#include <cstring>
-#include <iostream>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sstream>
 #include <sys/socket.h>
-#include <unistd.h>
 #include "protocol.h"
 
-int sendMessage(calcMessage *message_ptr, int clientsocket, int timeout, int attempts)
+int sendMessage(void *void_ptr, int clientsocket, size_t size)
 {
     ssize_t bytesSent = 0;
-    bytesSent = send(clientsocket, message_ptr, sizeof(calcMessage), 0);
+    bytesSent = send(clientsocket, void_ptr, size, 0);
     if (bytesSent < 0)
     {
         printf("ERROR:sending message failed!\n");

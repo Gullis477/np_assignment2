@@ -1,13 +1,10 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <unistd.h>
 #include "protocol.h"
 
-int read_data(calcProtocol *protocol_ptr, int clientSocket)
+int read_data(calcProtocol *protocol_ptr, int clientSocket, size_t size)
 {
-    ssize_t receivedBytes = recv(clientSocket, protocol_ptr, sizeof(calcProtocol), 0);
+    ssize_t receivedBytes = recv(clientSocket, protocol_ptr, size, 0);
     if (receivedBytes < 0)
     {
         printf("ERROR: Recevied data less than 0, PROBABLY REMOVE THIS");

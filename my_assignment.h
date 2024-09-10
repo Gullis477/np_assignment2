@@ -1,7 +1,5 @@
 #include "protocol.h"
 #include <arpa/inet.h>
-#include <map>
-#include <string>
 
 void *doAssignment(calcProtocol *protocol_ptr)
 {
@@ -52,3 +50,4 @@ void *doAssignment(calcProtocol *protocol_ptr)
     }
     protocol_ptr->inResult = result;
   }
+}

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     calcMessage message;
     calcMessage *message_ptr = &message;
     setMessage(message_ptr, 22, 0, 17, 1, 0);
-    if (sendMessage(message_ptr, clientSocket) < 0)
+    if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage)) < 0)
     {
       close(clientSocket);
       return -1;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     // if the server supports the protocoll, it will respond with a calcProtocoll.
     // if the server does not support it , it will respond with calcMessage type=2, message=2, major_version=1,minor_version=0
 
-    int response = read_data(protocol_ptr, clientSocket);
+    int response = read_data(protocol_ptr, clientSocket, sizeof(calcProtocol));
     if (response == 0)
     {
       doAssignment(protocol_ptr);
@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
       close(clientSocket);
       return 0;
     }
+    counter++;
   }
   if (flag == false)
   {
@@ -90,6 +91,18 @@ int main(int argc, char *argv[])
     return 0;
   }
 
+  flag = false;
+  counter = 0;
+  while (counter < attempts)
+  {
+    if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol)) < 0)
+    {
+      close(clientSocket);
+      return -1;
+    }
+
+    counter++;
+  }
   close(clientSocket);
   return 0;
 }
