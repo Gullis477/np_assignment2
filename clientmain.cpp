@@ -17,7 +17,6 @@
 #include "my_handle_message.h"
 #include "my_handle_data.h"
 
-// Included to get the support library
 #include <calcLib.h>
 
 #include "protocol.h"
@@ -31,20 +30,22 @@ int main(int argc, char *argv[])
 
   int waiting_seconds = 2;
 
-  struct addrinfo hints;
-  addrinfo *res = &hints;
+  struct addrinfo hints, *res;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
 
+  int status = getaddrinfo(Desthost, Destport, &hints, &res);
+  if (status != 0)
+  {
+    printf("ERROR: Cannot resolve server address\n");
+    return -1;
+  }
+
   int clientSocket = createConnectSocket(res, Desthost, Destport, waiting_seconds);
-  struct sockaddr *dest_addr;
-  socklen_t addr_len;
-  memcpy(dest_addr, res->ai_addr, res->ai_addrlen);
-  addr_len = res->ai_addrlen;
-  // freeaddrinfo(res);
   if (clientSocket < 0)
   {
+    freeaddrinfo(res);
     return -1;
   }
 
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
     calcMessage message;
     calcMessage *message_ptr = &message;
     setMessage(message_ptr, 22, 0, 17, 1, 0);
-    if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage), dest_addr, addr_len) < 0)
+    if (sendMessage(message_ptr, clientSocket, sizeof(calcMessage), res->ai_addr, res->ai_addrlen) < 0)
     {
       close(clientSocket);
       return -1;
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
   counter = 0;
   while (counter < attempts)
   {
-    if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol), dest_addr, addr_len) < 0)
+    if (sendMessage(protocol_ptr, clientSocket, sizeof(calcProtocol), res->ai_addr, res->ai_addrlen) < 0)
     {
       close(clientSocket);
       return -1;
@@ -137,6 +138,11 @@ int main(int argc, char *argv[])
       }
 
       printf("%s (myresult=%s)\n", server_message_char, server_message_char);
+    }
+    if (response == -2)
+    {
+      close(clientSocket);
+      return 0;
     }
     counter++;
   }

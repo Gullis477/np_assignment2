@@ -32,7 +32,7 @@ int createConnectSocket(addrinfo *res, char *Desthost, char *Destport, int wait_
         {
             printf("ERROR: Failed to set socket timeout.\n");
             freeaddrinfo(res);
-            close(clientSocket); // Close the socket on failure
+            close(clientSocket);
             return -1;
         }
     }
