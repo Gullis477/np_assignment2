@@ -52,8 +52,50 @@ int main(int argc, char *argv[])
     printf("Adress: %s\n", address);
     printf("Port: %s\n", port);
 
-    /* Do more magic */
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int server_fd = -1;
 
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    int s = getaddrinfo(address, port, &hints, &result);
+    if (s != 0)
+    {
+        fprintf(stderr, "getaddrinfo fel: %s\n", gai_strerror(s));
+        free(input);
+        return 1;
+    }
+
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        server_fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (server_fd == -1)
+        {
+            continue;
+        }
+
+        int opt = 1;
+        setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+        if (bind(server_fd, rp->ai_addr, rp->ai_addrlen) == 0)
+        {
+            printf("Servern har bundits framgångsrikt!\n");
+            break;
+        }
+
+        close(server_fd);
+    }
+    freeaddrinfo(result);
+    free(input);
+
+    if (rp == NULL)
+    {
+        fprintf(stderr, "Kunde inte binda till någon adress\n");
+        return 1;
+    }
     /*
        Prepare to setup a reoccurring event every 10s. If it_interval, or it_value is omitted, it will be a single alarm 10s after it has been set.
     */
