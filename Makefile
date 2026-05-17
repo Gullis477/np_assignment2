@@ -1,10 +1,13 @@
 
-all: libcalc test client server serverD
+all: libcalc test client server serverD tcpServer udpServer
 
 
 
 servermain.o: servermain.cpp protocol.h
 	$(CXX) -Wall -c servermain.cpp -I.
+
+tcpServer.o: servermain.cpp protocol.h
+	$(CXX) -Wall -c tcpServer.cpp -I.
 
 servermainD.o: servermain.cpp protocol.h
 	$(CXX) -Wall -c servermain.cpp -I. -DDEBUG -o servermainD.o
@@ -23,6 +26,13 @@ test: main.o calcLib.o
 client: clientmain.o calcLib.o
 	$(CXX) -L./ -Wall -o client clientmain.o -lcalc
 
+
+tcpServer: tcpServer.o calcLib.o
+	$(CXX) -L./ -Wall -o tcpServer tcpServer.o -lcalc
+
+udpServer: servermain.o calcLib.o
+	$(CXX) -L./ -Wall -o udpServer servermain.o -lcalc
+
 server: servermain.o calcLib.o
 	$(CXX) -L./ -Wall -o server servermain.o -lcalc
 
@@ -38,4 +48,4 @@ libcalc: calcLib.o
 	ar -rc libcalc.a -o calcLib.o
 
 clean:
-	rm *.o *.a test server client
+	rm *.o *.a test server client tcpServer udpServer

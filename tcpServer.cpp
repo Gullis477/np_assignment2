@@ -5,7 +5,11 @@
 #include <sys/time.h>
 
 /* You will to add includes here */
-
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
 // Included to get the support library
 #include <calcLib.h>
 
@@ -34,6 +38,19 @@ void checkJobbList(int signum)
 
 int main(int argc, char *argv[])
 {
+    char *input = strdup(argv[1]);
+    char *port = strrchr(input, ':');
+    if (port == NULL)
+    {
+        fprintf(stderr, "Fel: Formatet måste vara adress:port\n");
+        free(input);
+        return 1;
+    }
+    *port = '\0';
+    port++;
+    char *address = input;
+    printf("Adress: %s\n", address);
+    printf("Port: %s\n", port);
 
     /* Do more magic */
 
@@ -47,19 +64,19 @@ int main(int argc, char *argv[])
     alarmTime.it_value.tv_usec = 10;
 
     /* Regiter a callback function, associated with the SIGALRM signal, which will be raised when the alarm goes of */
-    signal(SIGALRM, checkJobbList);
-    setitimer(ITIMER_REAL, &alarmTime, NULL); // Start/register the alarm.
+    // signal(SIGALRM, checkJobbList);
+    // setitimer(ITIMER_REAL, &alarmTime, NULL); // Start/register the alarm.
 
 #ifdef DEBUG
     printf("DEBUGGER LINE ");
 #endif
 
-    while (terminate == 0)
-    {
-        printf("This is the main loop, %d time.\n", loopCount);
-        sleep(1);
-        loopCount++;
-    }
+    // while (terminate == 0)
+    //{
+    //     printf("This is the main loop, %d time.\n", loopCount);
+    //     sleep(1);
+    //     loopCount++;
+    // }
 
     printf("done.\n");
     return (0);
