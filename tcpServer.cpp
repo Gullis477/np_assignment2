@@ -96,6 +96,25 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Kunde inte binda till någon adress\n");
         return 1;
     }
+
+    if (listen(server_fd, 20) < 0)
+    {
+        perror("listen misslyckades");
+        exit(EXIT_FAILURE);
+    }
+    struct sockaddr_storage client_addr; // Flexibel struktur för att spara klientens info
+    socklen_t addr_size = sizeof(client_addr);
+    int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addr_size);
+    if (client_fd < 0)
+    {
+        perror("Accept misslyckades");
+        // continue;
+    }
+    else
+    {
+        printf("Klienten har kopplat upp sig\n");
+    }
+
     /*
        Prepare to setup a reoccurring event every 10s. If it_interval, or it_value is omitted, it will be a single alarm 10s after it has been set.
     */
